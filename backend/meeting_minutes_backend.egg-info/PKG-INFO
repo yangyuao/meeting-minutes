@@ -1,0 +1,13 @@
+Metadata-Version: 2.4
+Name: meeting-minutes-backend
+Version: 0.1.0
+Summary: Meeting minutes backend service
+Requires-Python: >=3.10
+Requires-Dist: fastapi
+Requires-Dist: uvicorn
+Requires-Dist: python-dotenv
+Requires-Dist: requests
+Requires-Dist: funasr
+Requires-Dist: torch
+Requires-Dist: pymysql
+Requires-Dist: python-docx

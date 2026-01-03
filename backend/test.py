@@ -208,6 +208,7 @@ def get_db_connection():
             connection.close()
 
 
+
 def init_database():
     """
     初始化数据库表
@@ -254,6 +255,7 @@ def init_database():
         logger.error(f"数据库初始化失败: {e}")
 
 
+
 def save_meeting_record(
     client_ip: str,
     username: str,
@@ -294,6 +296,7 @@ def save_meeting_record(
         logger.error(f"保存会议记录失败: {e}")
 
 
+
 def save_transcript_record(
     client_ip: str,
     username: str,
@@ -331,6 +334,7 @@ def save_transcript_record(
         logger.error(f"保存转录文件记录失败: {e}")
 
 
+
 def get_client_ip(request: Request) -> str:
     """
     获取客户端真实IP地址（支持代理）
@@ -358,6 +362,7 @@ def get_client_ip(request: Request) -> str:
     return client_ip
 
 
+
 def clean_speech(text):
     """
     清理语音转文字后的文本，去除多余空格和口语化词汇
@@ -383,6 +388,7 @@ def clean_speech(text):
     # 再次合并空格并去除首尾空白
     text = re.sub(r"\s+", " ", text).strip()
     return text
+
 
 
 def generate_ollama_stream(final_prompt: str) -> Generator[str, None, None]:
@@ -440,6 +446,7 @@ async def test_vllm():
         media_type="text/plain",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
+
 
 
 def generate_vllm_stream(
@@ -501,6 +508,7 @@ def generate_vllm_stream(
         yield f"[错误] 请求 vLLM 模型时出错: {str(e)}"
 
 
+
 def unified_streamer(
     system_prompt: str, user_prompt: str, is_production: bool
 ) -> Generator[str, None, None]:
@@ -544,6 +552,7 @@ async def get_default_prompt():
     """
     logger.info("获取默认提示词模板")
     return {"prompt": PROMPT_TEMPLATE}
+
 
 
 def process_transcript(input_file, output_file):
@@ -618,6 +627,7 @@ def process_transcript(input_file, output_file):
     logger.debug("转录处理完成，输出文件: %s", output_file)
 
 
+
 def ms_to_timestamp(milliseconds):
     """
     将毫秒转换为HH:MM:SS格式的时间戳
@@ -631,6 +641,7 @@ def ms_to_timestamp(milliseconds):
     seconds = milliseconds / 1000
     td = timedelta(seconds=seconds)
     return str(td).split(".")[0]
+
 
 
 def process_json(input_file, output_file):
@@ -879,9 +890,11 @@ async def upload_audio(
 
 CHINESE_NUMBERS = ["一", "二", "三", "四", "五", "六", "七", "八", "九", "十", "十一", "十二"]
 
+
 def clean_bold(text):
     """移除 **text** 中的星号，保留内容"""
     return re.sub(r'\*\*(.*?)\*\*', r'\1', text)
+
 
 def extract_section(text, section_title):
     """Extract content under a specific heading"""
@@ -905,6 +918,7 @@ def extract_section(text, section_title):
         pattern = rf'^## {escaped_title}\s*\n(.*?)(?=^## |\Z)'
         match = re.search(pattern, text, re.DOTALL | re.MULTILINE)
         return match.group(1).strip() if match else ""
+
 
 def fill_cell_with_formatting(cell, content):
     cell._element.clear_content()
@@ -948,35 +962,36 @@ def fill_cell_with_formatting(cell, content):
         p = cell.add_paragraph(clean_line)
         p.paragraph_format.left_indent = Cm(0.75)
 
+
 @app.post("/generate_docx")
 async def generate_docx(request: Request):
     try:
         request_data = await request.json()
         markdown_text: str = request_data.get("markdown", "")
-        
+
         if not markdown_text:
             raise HTTPException(status_code=400, detail="Missing markdown content")
-            
+
         # 提取各部分内容
         data = {
             "会议主题": extract_section(markdown_text, "会议主题"),
             "会议要点": extract_section(markdown_text, "讨论议题"),
             "待办事项": extract_section(markdown_text, "决定和行动计划"),
         }
-        
+
         # 创建临时文件路径
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
         template_path = os.getenv("PPT_TEMPLATE", "./会议纪要模板.docx")
         output_path = f"/tmp/meeting_minutes_{timestamp}.docx"
-        
+
         # 检查模板文件是否存在
         if not os.path.exists(template_path):
             raise HTTPException(status_code=500, detail=f"Template file '{template_path}' not found")
-        
+
         # 加载模板并填充内容
         doc = Document(template_path)
         filled = 0
-        
+
         for table in doc.tables:
             for row in table.rows:
                 if len(row.cells) < 2:
@@ -987,10 +1002,10 @@ async def generate_docx(request: Request):
                 if key in data:
                     fill_cell_with_formatting(cell, data[key])
                     filled += 1
-        
+
         # 保存文件
         doc.save(output_path)
-        
+
         # 返回文件
         return FileResponse(
             path=output_path,
@@ -998,7 +1013,7 @@ async def generate_docx(request: Request):
             media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             headers={"Content-Disposition": f"attachment; filename=meeting_minutes_{timestamp}.docx"}
         )
-        
+
     except Exception as e:
         print(f"Failed to generate DOCX: {e}")
         raise HTTPException(
@@ -1022,4 +1037,3 @@ if __name__ == "__main__":
         port=int(os.getenv("PORT", 8002)),
         reload=os.getenv("DEBUG", "False").lower() == "true",
     )
-    

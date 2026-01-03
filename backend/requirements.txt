@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+python-dotenv
+requests
+funasr
+torch
+pymysql
+python-docx
+torchaudio

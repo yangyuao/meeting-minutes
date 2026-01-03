@@ -15,7 +15,7 @@ export default defineConfig({
   server: {
     port: 3000,
     host: '0.0.0.0', // 允许外部访问
-    https: true, // 启用 HTTPS
+    https: false, // 启用 HTTPS
     open: true,
     strictPort: false,
     // 确保静态文件正确服务
@@ -31,7 +31,7 @@ export default defineConfig({
   preview: {
     port: 3000,
     host: '0.0.0.0',
-    https: true, // 预览服务器也启用 HTTPS
+    https: false, // 预览服务器也启用 HTTPS
     cors: true
   },
   define: {
